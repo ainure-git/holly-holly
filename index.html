@@ -1352,38 +1352,28 @@ body {
   }
 
   #player-hand {
-    justify-content: flex-start !important;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 8px 8px 4px;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: 8px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    overscroll-behavior-x: contain;
-  }
-  #player-hand::-webkit-scrollbar {
-    display: none;
+    justify-content: center !important;
+    overflow: visible;
+    padding: 8px 10px 4px 0;
+    gap: 4px;
+    touch-action: manipulation;
   }
   .hand-card {
-    width: 64px;
-    height: 90px;
-    margin: 0 0 0 -16px;
-    scroll-snap-align: center;
+    width: 60px;
+    height: 84px;
+    margin: 0;
   }
-  .hand-card:first-child {
-    margin-left: 0;
+  #player-hand.is-compact .hand-card {
+    transform: translateY(var(--compact-hand-lift, 0px)) rotate(var(--compact-hand-rot, 0deg));
   }
-  .hand-card:hover {
-    transform: translateY(-6px) scale(1.03);
+  #player-hand.is-compact .hand-card:hover {
+    transform: translateY(calc(var(--compact-hand-lift, 0px) - 6px)) rotate(var(--compact-hand-rot, 0deg)) scale(1.03);
   }
-  .hand-card.is-unplayable:hover {
-    transform: translateY(-4px) scale(1.01);
+  #player-hand.is-compact .hand-card.is-unplayable:hover {
+    transform: translateY(calc(var(--compact-hand-lift, 0px) - 4px)) rotate(var(--compact-hand-rot, 0deg)) scale(1.01);
   }
-  .hand-card.is-awaiting-target {
-    transform: translateY(-30px) scale(1.16);
+  #player-hand.is-compact .hand-card.is-awaiting-target {
+    transform: translateY(calc(var(--compact-hand-lift, 0px) - 24px)) rotate(var(--compact-hand-rot, 0deg)) scale(1.14);
   }
   .hand-card.is-previewed {
     transform: translate(-50%, -50%) scale(1.9);
@@ -1418,6 +1408,14 @@ body {
   padding: var(--sp-5);
 }
 .inspect-modal.is-visible { display: flex; }
+#inspect-container {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
 .inspect-card {
   width: 280px; max-width: 90vw; max-height: 92vh;
   overflow-y: auto;
@@ -1493,6 +1491,78 @@ body {
   text-align: center; font-size: 11px;
   color: var(--c-success); margin-top: 10px;
   letter-spacing: 1px; font-weight: 700;
+}
+.inspect-modal.is-compact {
+  padding:
+    calc(8px + env(safe-area-inset-top))
+    calc(10px + env(safe-area-inset-right))
+    calc(8px + env(safe-area-inset-bottom))
+    calc(10px + env(safe-area-inset-left));
+}
+.inspect-modal.is-compact .inspect-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 250px;
+  max-width: none;
+  max-height: none;
+  overflow: hidden;
+  padding: 12px;
+  border-width: 2px;
+  border-radius: 10px;
+  transform: translate(-50%, -50%) scale(var(--inspect-scale, 1));
+  transform-origin: center center;
+}
+.inspect-modal.is-compact .inspect-card__cost {
+  top: 8px; left: 8px;
+  width: 30px; height: 30px;
+  font-size: 15px;
+}
+.inspect-modal.is-compact .inspect-card__rarity {
+  top: 8px; right: 8px;
+  font-size: 8px;
+  padding: 4px 8px;
+}
+.inspect-modal.is-compact .inspect-card__art {
+  height: 78px;
+  font-size: 50px;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+.inspect-modal.is-compact .inspect-card__name { font-size: 14px; }
+.inspect-modal.is-compact .inspect-card__subtitle {
+  font-size: 8px;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.inspect-modal.is-compact .inspect-card__type {
+  font-size: 9px;
+  padding: 6px 0;
+  margin-bottom: 8px;
+}
+.inspect-modal.is-compact .inspect-card__stats { margin-bottom: 8px; }
+.inspect-modal.is-compact .stat-big__value { font-size: 22px; }
+.inspect-modal.is-compact .stat-big__label,
+.inspect-modal.is-compact .inspect-card__ability-title,
+.inspect-modal.is-compact .inspect-card__owned { font-size: 8px; }
+.inspect-modal.is-compact .inspect-card__ability,
+.inspect-modal.is-compact .inspect-card__lore {
+  font-size: 9px;
+  line-height: 1.35;
+}
+.inspect-modal.is-compact .inspect-card__ability { padding: 8px; }
+.inspect-modal.is-compact .inspect-card__lore {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.inspect-modal.is-compact [data-inspect-actions] {
+  margin-top: 10px !important;
+  gap: 6px !important;
+}
+.inspect-modal.is-compact .btn {
+  font-size: 9px;
+  padding: 5px 10px;
+  letter-spacing: 1px;
 }
 
 /* ─── PACK OPENING ─── */
@@ -6480,7 +6550,7 @@ function renderInspectCard(card, ownedQty) {
     el('div', { style: { textAlign: 'center', marginTop: '14px' } }, [
       el('button', {
         cls: 'btn btn--sm', text: 'Cerrar',
-        on: { click: () => document.getElementById('inspect-modal').classList.remove('is-visible') }
+        on: { click: () => closeInspect() }
       })
     ])
   ]);
@@ -6806,6 +6876,15 @@ class BattleController {
       logTimer: null,
       scene: 'noche'
     };
+    this.onViewportChange = () => {
+      this.layoutCompactPlayerHand();
+      fitInspectCardToViewport();
+    };
+    window.addEventListener('resize', this.onViewportChange);
+    window.addEventListener('orientationchange', this.onViewportChange);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.onViewportChange);
+    }
   }
 
   // ═════════════ LIFECYCLE ═════════════
@@ -7158,6 +7237,7 @@ class BattleController {
     modal.addEventListener('click', onBackdrop);
     this.state.inspectBackdropHandler = onBackdrop;
 
+    fitInspectCardToViewport();
     audio.play('click');
   }
 
@@ -7172,6 +7252,7 @@ class BattleController {
     this.state.inspectedCardId = null;
     this.state.inspectedCardEl = null;
     this.state.inspectBackdropHandler = null;
+    resetInspectViewportState();
   }
 
   attemptPlay(card, cardEl) {
@@ -7474,6 +7555,7 @@ class BattleController {
     const hand = document.getElementById('player-hand');
     clear(hand);
     if (handArr.length === 0) {
+      hand.classList.remove('is-compact');
       hand.appendChild(el('div', { style: { color: 'var(--c-purple-dark)', fontSize: '11px', fontStyle: 'italic', letterSpacing: '3px' }, text: 'MANO VACÍA' }));
       return;
     }
@@ -7488,6 +7570,34 @@ class BattleController {
       });
       hand.appendChild(ref.el);
     }
+    this.layoutCompactPlayerHand();
+  }
+
+  layoutCompactPlayerHand() {
+    const hand = document.getElementById('player-hand');
+    if (!hand) return;
+
+    const cards = [...hand.querySelectorAll('.hand-card')];
+    const compact = isCompactBattleMobileViewport() && cards.length > 0;
+    hand.classList.toggle('is-compact', compact);
+
+    cards.forEach((card) => {
+      card.style.removeProperty('--compact-hand-rot');
+      card.style.removeProperty('--compact-hand-lift');
+      card.style.removeProperty('z-index');
+    });
+
+    if (!compact) return;
+
+    const count = cards.length;
+    cards.forEach((card, index) => {
+      const ratio = count === 1 ? 0 : (index / (count - 1)) * 2 - 1;
+      const rotate = ratio * 6;
+      const lift = -Math.round((1 - Math.abs(ratio)) * 6);
+      card.style.setProperty('--compact-hand-rot', `${rotate.toFixed(2)}deg`);
+      card.style.setProperty('--compact-hand-lift', `${lift}px`);
+      card.style.zIndex = String(10 + index);
+    });
   }
 
   // ═════════════ GAME OVER ═════════════
@@ -8101,17 +8211,65 @@ function buildInspectModal() {
   }, [el('div', { id: 'inspect-container' })]);
 }
 
+function isCompactBattleMobileViewport() {
+  const vv = window.visualViewport;
+  const width = vv?.width || window.innerWidth;
+  const height = vv?.height || window.innerHeight;
+  const mobile = typeof isMobile === 'boolean'
+    ? isMobile
+    : /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  return mobile && width > height && height <= 540;
+}
+
+function resetInspectViewportState() {
+  const modal = document.getElementById('inspect-modal');
+  const card = modal?.querySelector('.inspect-card');
+  modal?.classList.remove('is-compact');
+  card?.style.removeProperty('--inspect-scale');
+}
+
+function fitInspectCardToViewport() {
+  const modal = document.getElementById('inspect-modal');
+  const card = modal?.querySelector('.inspect-card');
+  if (!modal || !card || !modal.classList.contains('is-visible')) return;
+
+  resetInspectViewportState();
+  if (!isCompactBattleMobileViewport()) return;
+
+  modal.classList.add('is-compact');
+  requestAnimationFrame(() => {
+    if (!modal.classList.contains('is-visible')) return;
+    const vv = window.visualViewport;
+    const width = vv?.width || window.innerWidth;
+    const height = vv?.height || window.innerHeight;
+    const safeW = Math.max(width - 20, 180);
+    const safeH = Math.max(height - 20, 220);
+    const cardW = card.offsetWidth || 250;
+    const cardH = card.scrollHeight || card.offsetHeight || 420;
+    const scale = Math.min(safeW / cardW, safeH / cardH, 1);
+    card.style.setProperty('--inspect-scale', scale.toFixed(3));
+  });
+}
+
 function openInspect(card, ownedQty) {
   const modal = document.getElementById('inspect-modal');
   const container = document.getElementById('inspect-container');
   clear(container);
   container.appendChild(renderInspectCard(card, ownedQty));
   modal.classList.add('is-visible');
+  fitInspectCardToViewport();
   audio.play('click');
 }
 
 function closeInspect() {
   document.getElementById('inspect-modal').classList.remove('is-visible');
+  resetInspectViewportState();
+}
+
+window.addEventListener('resize', fitInspectCardToViewport);
+window.addEventListener('orientationchange', fitInspectCardToViewport);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fitInspectCardToViewport);
 }
 
 // ═══════════════════════════════════════════════════════════════
