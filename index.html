@@ -7907,7 +7907,7 @@ function buildRotateOverlay() {
   return el('div', { cls: 'rotate-overlay' }, [
     el('div', { cls: 'rotate-overlay__icon', text: '📱' }),
     el('div', { cls: 'rotate-overlay__text', text: 'GIRA EL MÓVIL' }),
-    el('div', { cls: 'rotate-overlay__sub', text: 'Holly Cards se juega en horizontal' })
+    el('div', { cls: 'rotate-overlay__sub', text: 'Holly Cards se juega en horizontal · pantalla completa automática' })
   ]);
 }
 
@@ -8036,6 +8036,84 @@ const bootstrapMusic = () => {
 };
 document.addEventListener('click', bootstrapMusic, { once: true });
 document.addEventListener('touchstart', bootstrapMusic, { once: true, passive: true });
+
+// ═══════════════════════════════════════════════════════════════
+// FULLSCREEN ON LANDSCAPE
+//
+// Browsers hide the URL bar when an app enters fullscreen. We can only
+// request fullscreen from a user gesture, so we arm a "pending" flag
+// whenever the viewport rotates to landscape, and consume it on the
+// very next tap/click. Also try immediately after rotation in case the
+// browser still considers the orientation event a user gesture
+// (works on Chrome Android, usually not on iOS Safari).
+// ═══════════════════════════════════════════════════════════════
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const isLandscape = () =>
+  (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
+  window.innerWidth > window.innerHeight;
+
+let pendingFullscreen = false;
+
+function requestFullscreenSafe() {
+  if (!isMobile) return;
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  const root = document.documentElement;
+  const fn = root.requestFullscreen || root.webkitRequestFullscreen || root.webkitEnterFullscreen;
+  if (!fn) return;
+  try {
+    const promise = fn.call(root);
+    if (promise && typeof promise.then === 'function') {
+      promise.catch(() => { /* user denied or not allowed — retry on next gesture */ });
+    }
+    // Lock to landscape on devices that support the API
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(() => {});
+    }
+  } catch (e) { /* silent */ }
+}
+
+function onOrientationMaybeChanged() {
+  if (!isMobile) return;
+  if (isLandscape()) {
+    // Try immediately (sometimes works as the rotation itself is a gesture)
+    requestFullscreenSafe();
+    // If that failed, consume the next user tap to force it
+    pendingFullscreen = true;
+  } else {
+    // Back to portrait — exit fullscreen so the rotate overlay shows cleanly
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+    pendingFullscreen = false;
+  }
+}
+
+// Listen to every possible rotation signal — browsers differ
+window.addEventListener('orientationchange', onOrientationMaybeChanged);
+window.addEventListener('resize', onOrientationMaybeChanged);
+if (window.matchMedia) {
+  const mq = window.matchMedia('(orientation: landscape)');
+  if (mq.addEventListener) mq.addEventListener('change', onOrientationMaybeChanged);
+  else if (mq.addListener) mq.addListener(onOrientationMaybeChanged); // older Safari
+}
+
+// Consume the first gesture after rotating to landscape to actually enter fullscreen
+const consumePendingFullscreen = () => {
+  if (pendingFullscreen && isLandscape()) {
+    pendingFullscreen = false;
+    requestFullscreenSafe();
+  }
+};
+document.addEventListener('touchend', consumePendingFullscreen, { passive: true });
+document.addEventListener('click', consumePendingFullscreen);
+
+// If the app loads already in landscape on mobile, queue the request for
+// the first interaction (can't call requestFullscreen before user gesture).
+if (isMobile && isLandscape()) {
+  pendingFullscreen = true;
+}
 
 console.log('[Holly Cards] v0.5.0 · Level', player.state.level, '· Cards:', player.getTotalCardsOwned());
 
