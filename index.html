@@ -110,7 +110,10 @@ html, body {
   background: #000;
   overflow: hidden;
   overscroll-behavior: none;
-  height: 100%; width: 100%;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
   position: fixed;
 }
 body {
@@ -121,7 +124,10 @@ body {
 }
 #app {
   background: var(--c-bg-1);
-  width: 100vw; height: 100vh;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
 }
@@ -713,9 +719,16 @@ body {
 .hand-area {
   display: flex; align-items: flex-end; justify-content: center;
   gap: 0;
-  padding: 4px 200px;
+  padding: 4px 200px calc(4px + env(safe-area-inset-bottom));
   min-height: 134px;
   position: relative;
+}
+#player-hand {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
 }
 .hand-area__power {
   position: absolute;
@@ -1155,6 +1168,236 @@ body {
   @keyframes cardPreviewIn {
     from { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
     to { transform: translate(-50%, -50%) scale(2.2); opacity: 1; }
+  }
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .battle-bg__moon {
+    width: 58px;
+    height: 58px;
+    top: 7%;
+    right: 11%;
+  }
+
+  .arena {
+    grid-template-rows: 40px minmax(78px, 1fr) minmax(78px, 1fr) 96px;
+    padding:
+      calc(6px + env(safe-area-inset-top))
+      calc(8px + env(safe-area-inset-right))
+      calc(6px + env(safe-area-inset-bottom))
+      calc(8px + env(safe-area-inset-left));
+    gap: 3px;
+  }
+
+  .hp-orb {
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 12px;
+  }
+  .hp-orb--enemy {
+    top: calc(6px + env(safe-area-inset-top));
+    left: calc(6px + env(safe-area-inset-left));
+  }
+  .hp-orb--player {
+    bottom: calc(100px + env(safe-area-inset-bottom));
+    right: calc(6px + env(safe-area-inset-right));
+  }
+  .hp-orb__avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  .hp-orb__name {
+    max-width: 96px;
+    font-size: 9px;
+  }
+  .hp-orb__role {
+    font-size: 7px;
+    letter-spacing: 2px;
+  }
+  .hp-orb__hp {
+    font-size: 18px;
+  }
+  .hp-orb__hp-max,
+  .hp-orb__decks {
+    font-size: 8px;
+  }
+  .mana-bar {
+    gap: 2px;
+    max-width: 84px;
+  }
+  .mana-bead {
+    width: 8px;
+    height: 8px;
+  }
+
+  .enemy-hand {
+    min-height: 36px;
+    padding: 0 96px 0 106px;
+  }
+  .card-back {
+    width: 30px;
+    height: 42px;
+  }
+  .card-back::after {
+    font-size: 14px;
+  }
+
+  .field-zone {
+    min-height: 88px;
+    gap: 5px;
+    padding-left: 96px;
+    padding-right: 100px;
+  }
+  .field-zone__empty {
+    font-size: 9px;
+    letter-spacing: 2px;
+  }
+  .field-card,
+  .attack-hero-target {
+    width: 68px;
+    height: 96px;
+  }
+  .field-card__cost,
+  .hand-card__cost {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+  .field-card__name,
+  .hand-card__name {
+    min-height: 14px;
+    font-size: 6.5px;
+  }
+  .field-card__art,
+  .hand-card__art {
+    font-size: 24px;
+  }
+  .field-card__ability,
+  .hand-card__ability {
+    min-height: 16px;
+    font-size: 5.5px;
+    padding: 2px;
+  }
+  .field-card__type,
+  .hand-card__type {
+    font-size: 6px;
+  }
+  .field-card .stat-atk,
+  .field-card .stat-hp,
+  .hand-card .stat-atk,
+  .hand-card .stat-hp {
+    min-width: 18px;
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  .mid-controls {
+    right: calc(6px + env(safe-area-inset-right));
+    gap: 5px;
+  }
+  .turn-btn {
+    min-width: 96px;
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    border-radius: 10px;
+  }
+  .mid-controls__btn {
+    min-width: 96px;
+    padding: 6px 8px;
+    font-size: 8px;
+  }
+  .turn-indicator {
+    font-size: 8px;
+  }
+  .battle-log {
+    top: calc(48px + env(safe-area-inset-top));
+    max-width: 48%;
+    font-size: 9px;
+    padding: 5px 10px;
+  }
+
+  .hand-area {
+    min-height: 96px;
+    align-items: stretch;
+    padding:
+      0
+      calc(6px + env(safe-area-inset-right))
+      calc(6px + env(safe-area-inset-bottom))
+      calc(58px + env(safe-area-inset-left));
+    background: linear-gradient(180deg, transparent 0%, rgba(3,5,8,0.18) 35%, rgba(3,5,8,0.72) 100%);
+  }
+  .hand-area__power {
+    left: calc(6px + env(safe-area-inset-left));
+    top: auto;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    transform: none;
+  }
+  .power-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+  }
+  .power-btn__cost {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    bottom: -2px;
+    right: -2px;
+  }
+  .power-btn__label {
+    top: -18px;
+    font-size: 7px;
+  }
+
+  #player-hand {
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 8px 4px;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+  }
+  #player-hand::-webkit-scrollbar {
+    display: none;
+  }
+  .hand-card {
+    width: 64px;
+    height: 90px;
+    margin: 0 0 0 -16px;
+    scroll-snap-align: center;
+  }
+  .hand-card:first-child {
+    margin-left: 0;
+  }
+  .hand-card:hover {
+    transform: translateY(-6px) scale(1.03);
+  }
+  .hand-card.is-unplayable:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+  .hand-card.is-awaiting-target {
+    transform: translateY(-30px) scale(1.16);
+  }
+  .hand-card.is-previewed {
+    transform: translate(-50%, -50%) scale(1.9);
+  }
+  @keyframes cardPreviewIn {
+    from { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+    to { transform: translate(-50%, -50%) scale(1.9); opacity: 1; }
+  }
+  .preview-hint {
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    max-width: calc(100vw - 32px);
   }
 }
 
