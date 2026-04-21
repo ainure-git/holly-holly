@@ -1,0 +1,13 @@
+{
+  "name": "Holly Cards",
+  "short_name": "Holly",
+  "description": "TCG de la Semana Santa sevillana",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "icons": [
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
