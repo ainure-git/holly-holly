@@ -8429,9 +8429,18 @@ document.addEventListener('contextmenu', e => {
 // Music needs user gesture on mobile browsers before it can autoplay.
 // Init on first click/touch and start intro track.
 let musicBootstrapped = false;
+function hasActiveFullscreen(doc = document) {
+  return Boolean(doc.fullscreenElement || doc.webkitFullscreenElement);
+}
+
+function shouldQueueInitialFullscreen(mobile = isMobile, doc = document) {
+  return mobile && !hasActiveFullscreen(doc);
+}
+
 const bootstrapMusic = () => {
   if (musicBootstrapped) return;
   musicBootstrapped = true;
+  pendingFullscreen = shouldQueueInitialFullscreen();
   music.init();
   music.play('intro');
 };
@@ -8453,24 +8462,41 @@ const isLandscape = () =>
   (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
   window.innerWidth > window.innerHeight;
 
-let pendingFullscreen = false;
+let pendingFullscreen = shouldQueueInitialFullscreen();
 
 function requestFullscreenSafe() {
-  if (!isMobile) return;
-  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  if (!isMobile) {
+    pendingFullscreen = false;
+    return false;
+  }
+  if (hasActiveFullscreen()) {
+    pendingFullscreen = false;
+    return false;
+  }
   const root = document.documentElement;
   const fn = root.requestFullscreen || root.webkitRequestFullscreen || root.webkitEnterFullscreen;
-  if (!fn) return;
+  if (!fn) {
+    pendingFullscreen = false;
+    return false;
+  }
   try {
     const promise = fn.call(root);
     if (promise && typeof promise.then === 'function') {
-      promise.catch(() => { /* user denied or not allowed — retry on next gesture */ });
+      promise
+        .then(() => { pendingFullscreen = false; })
+        .catch(() => { pendingFullscreen = !hasActiveFullscreen(); });
+    } else {
+      pendingFullscreen = !hasActiveFullscreen();
     }
     // Lock to landscape on devices that support the API
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(() => {});
     }
-  } catch (e) { /* silent */ }
+    return true;
+  } catch (e) {
+    pendingFullscreen = !hasActiveFullscreen();
+    return false;
+  }
 }
 
 function onOrientationMaybeChanged() {
@@ -8502,19 +8528,15 @@ if (window.matchMedia) {
 
 // Consume the first gesture after rotating to landscape to actually enter fullscreen
 const consumePendingFullscreen = () => {
-  if (pendingFullscreen && isLandscape()) {
+  if (!pendingFullscreen) return;
+  if (hasActiveFullscreen()) {
     pendingFullscreen = false;
-    requestFullscreenSafe();
+    return;
   }
+  requestFullscreenSafe();
 };
 document.addEventListener('touchend', consumePendingFullscreen, { passive: true });
 document.addEventListener('click', consumePendingFullscreen);
-
-// If the app loads already in landscape on mobile, queue the request for
-// the first interaction (can't call requestFullscreen before user gesture).
-if (isMobile && isLandscape()) {
-  pendingFullscreen = true;
-}
 
 console.log('[Holly Cards] v0.5.0 · Level', player.state.level, '· Cards:', player.getTotalCardsOwned());
 
