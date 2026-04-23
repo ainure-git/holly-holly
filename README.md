@@ -1,4 +1,4 @@
-# Holly Cards · Despliegue
+# Holly Holly · Despliegue
 
 Carpeta lista para subir a GitHub Pages. No requiere build, Node ni dependencias.
 
@@ -36,7 +36,7 @@ Opción B — vía git:
 cd E:\CODE_feliz\HOLLY-HOLLY\holly
 git init
 git add .
-git commit -m "Holly Cards v0.5.0"
+git commit -m "Holly Holly v0.5.0"
 git branch -M main
 git remote add origin https://github.com/TU_USUARIO/holly-cards.git
 git push -u origin main
